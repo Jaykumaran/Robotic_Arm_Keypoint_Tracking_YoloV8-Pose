@@ -1,25 +1,19 @@
-import cv2
-import numpy as np
+import matplotlib.pyplot as plt
 from ultralytics import YOLO
-from PIL import Image
+from PIL import Image, ImageDraw
 
-# Create a new YOLOv8n-OBB model from scratch
-model = YOLO("C:\\Users\\jaikr\\Downloads\Final\\best.pt")
+model = YOLO("C:\\Users\\jaikr\\Downloads\\Final\\best.pt")
+results = model.predict(source="C:\\Users\\jaikr\\Downloads\\Subset640\\train\\images\\WIN_20230915_20_27_08_Pro.jpg")
 
-# Train the model on the DOTAv2 dataset
-results = model.predict(source="C:\\Users\\jaikr\\Downloads\\Subset640\\train\\images\\WIN_20230915_20_38_36_Pro.jpg")
-
-# Show the results
 for r in results:
     print(r.keypoints)
-    img_array = r.plot(kpt_line=True, kpt_radius=3)  # plot a BGR numpy array of predictions
 
-    # Extract xy coordinates for the keypoints
-    keypoints = r.xy.int().numpy()
+    # this line is changed
+    keypoints = r.keypoints.xy.int().numpy()  # get the keypoints
+    img_array = r.plot(kpt_line=True, kpt_radius=6)  # plot a BGR array of predictions
+    im = Image.fromarray(img_array[..., ::-1])  # Convert array to a PIL Image
 
-    # Draw lines between the keypoints
-    cv2.line(img_array, tuple(keypoints[0]), tuple(keypoints[1]), (255, 0, 255), 2)  # line from point1 to point2
-    cv2.line(img_array, tuple(keypoints[1]), tuple(keypoints[2]), (255, 0, 255), 2)  # line from point2 to point3
-
-    img = Image.fromarray(img_array[..., ::-1])  # create a PIL image from the array
-    img.show() # show the image
+    draw = ImageDraw.Draw(im)
+    draw.line([(keypoints[0][0][0], keypoints[0][0][1]), (keypoints[0][1][0],
+            keypoints[0][1][1]), (keypoints[0][2][0], keypoints[0][2][1])], fill=(0, 0,255), width=5)
+    im.show()
